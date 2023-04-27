@@ -1,0 +1,3 @@
+https://developer.bitcoin.org/devguide/block_chain.html
+https://blockchainlanzarote.org/2020/10/02/crea-tu-blockchain-en-un-solo-post-con-python/
+https://ellibrodepython.com/hash-python

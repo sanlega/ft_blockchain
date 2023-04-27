@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Blockchain Frontend</title>
+</head>
+<body>
+    <h1>Blockchain Frontend</h1>
+    <form id="transaction-form">
+        <label for="sender">Sender:</label>
+        <input type="text" id="sender" name="sender">
+        <label for="recipient">Recipient:</label>
+        <input type="text" id="recipient" name="recipient">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount">
+        <button type="submit">Submit Transaction</button>
+    </form>
+    <button id="mine" onclick="mine()">Mine Block</button>
+    <pre id="blockchain"></pre>
+    <script>
+        document.getElementById('transaction-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const sender = document.getElementById('sender').value;
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+
+            const response = await fetch('/transactions/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({sender, recipient, amount}),
+            });
+
+            if (response.status === 201) {
+                const data = await response.json();
+                alert(data.message);
+                document.getElementById('transaction-form').reset();
+                await fetchBlockchain();
+            } else {
+                const errorText = await response.text();
+                alert(`Error ${response.status}: ${errorText}`);
+            }
+        });
+        async function fetchBlockchain() {
+            const response = await fetch('/blockchain');
+            const data = await response.json();
+            const blockchainDiv = document.getElementById('blockchain');
+            blockchainDiv.innerHTML = '';
+
+            data.chain.forEach((block, index) => {
+                const blockDiv = document.createElement('div');
+                const blockTitle = document.createElement('h3');
+                blockTitle.innerText = `Block ${index}`;
+                blockDiv.appendChild(blockTitle);
+
+                const blockInfo = document.createElement('pre');
+                blockInfo.innerText = `Timestamp: ${block.timestamp}\nNonce: ${block.nonce}\nHash of Previous Block: ${block.hash_of_previous_block}`;
+                blockDiv.appendChild(blockInfo);
+
+                const transactionsTitle = document.createElement('h4');
+                transactionsTitle.innerText = 'Transactions:';
+                blockDiv.appendChild(transactionsTitle);
+
+                const transactionsList = document.createElement('ul');
+                block.transactions.forEach(transaction => {
+                    const transactionItem = document.createElement('li');
+                    transactionItem.innerText = `Sender: ${transaction.sender}, Recipient: ${transaction.recipient}, Amount: ${transaction.amount}`;
+                    transactionsList.appendChild(transactionItem);
+                });
+                blockDiv.appendChild(transactionsList);
+
+                blockchainDiv.appendChild(blockDiv);
+            });
+        }
+    </script>
+</body>
+</html>
